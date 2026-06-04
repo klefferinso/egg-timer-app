@@ -36,9 +36,11 @@ export default function TimerScreen() {
   const name  = params.name as string;
   const icon  = params.icon as string;
   const tip   = params.tip as string;
-  const total = Number(params.seconds);
 
-  const [remaining, setRemaining] = useState(total);
+  // Store total in state so it never changes between renders
+  const [initialTotal] = useState(Number(params.seconds));
+
+  const [remaining, setRemaining] = useState(initialTotal);
   const [running, setRunning]     = useState(false);
   const [done, setDone]           = useState(false);
 
@@ -83,13 +85,13 @@ export default function TimerScreen() {
   };
 
   // Progress ring calculation
-  const progress     = remaining / total;
+  const progress     = remaining / initialTotal;
   const strokeOffset = CIRCUMFERENCE * (1 - progress);
 
   const handleReset = () => {
     setRunning(false);
     setDone(false);
-    setRemaining(total);
+    setRemaining(initialTotal);
   };
 
   // 🎉 Done screen
@@ -132,14 +134,12 @@ export default function TimerScreen() {
       {/* Progress ring */}
       <View style={styles.ringWrap}>
         <Svg width={240} height={240} viewBox="0 0 240 240">
-          {/* Background ring */}
           <Circle
             cx="120" cy="120" r={RADIUS}
             fill="none"
             stroke="#F0D9A8"
             strokeWidth={STROKE}
           />
-          {/* Progress ring */}
           <Circle
             cx="120" cy="120" r={RADIUS}
             fill="none"
@@ -152,7 +152,6 @@ export default function TimerScreen() {
           />
         </Svg>
 
-        {/* Timer text inside the ring */}
         <View style={styles.ringCenter}>
           <EggIcon type={icon} />
           <Text style={styles.timerDisplay}>{formatTime(remaining)}</Text>
@@ -165,9 +164,13 @@ export default function TimerScreen() {
         <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
           <Text style={styles.resetText}>Reset</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.primaryBtn} onPress={() => setRunning(!running)}>
+        <TouchableOpacity
+          style={styles.primaryBtn}
+          onPress={() => setRunning(!running)}
+          testID="timer-action-btn"
+        >
           <Text style={styles.primaryBtnText}>
-            {running ? 'Pause' : remaining === total ? 'Start' : 'Resume'}
+            {running ? 'Pause' : remaining === initialTotal ? 'Start' : 'Resume'}
           </Text>
         </TouchableOpacity>
       </View>
